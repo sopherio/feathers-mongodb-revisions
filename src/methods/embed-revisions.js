@@ -28,7 +28,9 @@ class Service extends adapter.Service {
           // If $select fields have been specified, the only way to remove
           // the historical versions is after the query has been executed.
           response.data.forEach(resource => {
-            delete resource._revision.history
+            if (resource._revision && resource._revision.history) {
+              delete resource._revision.history
+            }
           })
         }
         return response
@@ -72,7 +74,7 @@ class Service extends adapter.Service {
         }
 
         // Require passing in the current revision ID, to guard against race conditions.
-        if (!data._revision.id) {
+        if (!data._revision || (data._revision && !data._revision.id)) {
           throw new errors.NotAcceptable('The current revision ID must be provided as \'_revision.id\'')
         }
 
@@ -88,7 +90,9 @@ class Service extends adapter.Service {
         }
 
         // Disallow explicitly updating revision metadata.
-        delete data._revision
+        if (data._revision) {
+          delete data._revision
+        }
 
         // Update revision metadata.
         // Use dot notation here so it doesn't overwrite the `_revision.history` field.
@@ -96,7 +100,9 @@ class Service extends adapter.Service {
         data['_revision.createdAt'] = data.updatedAt || new Date()
 
         // Ensure the historical revisions aren't accidentally overridden.
-        delete data['_revision.history']
+        if (data['_revision.history']) {
+          delete data['_revision.history']
+        }
 
         return this.Model
           .update({
