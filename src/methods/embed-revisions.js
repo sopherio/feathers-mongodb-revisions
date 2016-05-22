@@ -6,29 +6,29 @@ import errors from 'feathers-errors'
 import merge from 'lodash/merge'
 
 class Service extends adapter.Service {
-  // Duplicates `super._find`, but omits previous revisions for performance.
+  // Duplicates `super._find`, but omits historical revisions for performance.
   _find (params, count, getFilter) {
     // Ensure query parameters have been specified.
     params.query = params.query || {}
 
-    // Whether results will need post-processing to remove previous revisions.
-    let removePreviousRevisionsManually = true
+    // Whether results will need post-processing to remove historical revisions.
+    let removeHistoricalRevisionsManually = true
 
     if (!params.query.$select) {
-      // If no $select fields have been specified, exclude previous revisions.
-      params.query.$select = { '_revision.previous': 0 }
-      // Since the previous revisions are omitted, no need to manually remove them.
-      removePreviousRevisionsManually = false
+      // If no $select fields have been specified, exclude historical revisions.
+      params.query.$select = { '_revision.history': 0 }
+      // Since the historical revisions are omitted, no need to manually remove them.
+      removeHistoricalRevisionsManually = false
     }
 
     return super._find(params, count, getFilter)
       .then(response => {
-        if (removePreviousRevisionsManually) {
+        if (removeHistoricalRevisionsManually) {
           // Mongo only allows for including or excluding fields, not both.
           // If $select fields have been specified, the only way to remove
-          // the previous versions is after the query has been executed.
+          // the historical versions is after the query has been executed.
           response.data.forEach(resource => {
-            delete resource._revision.previous
+            delete resource._revision.history
           })
         }
         return response
@@ -36,11 +36,11 @@ class Service extends adapter.Service {
       .catch(errorHandler)
   }
 
-  // Duplicates `super._get`, but omits previous revisions for performance.
+  // Duplicates `super._get`, but omits historical revisions for performance.
   _get (id) {
     id = this._objectifyId(id)
 
-    return this.Model.findOne({ [this.id]: id }, { '_revision.previous': 0 })
+    return this.Model.findOne({ [this.id]: id }, { '_revision.history': 0 })
       .then(data => {
         if (!data) {
           throw new errors.NotFound(`No record found for id '${id}'`)
@@ -65,7 +65,7 @@ class Service extends adapter.Service {
     id = this._objectifyId(id)
 
     return this.Model
-      .findOne({ [this.id]: id }, { '_revision.previous': 0 })
+      .findOne({ [this.id]: id }, { '_revision.history': 0 })
       .then(current => {
         if (!current) {
           throw new errors.NotFound(`No record found for id '${id}'`)
@@ -91,12 +91,12 @@ class Service extends adapter.Service {
         delete data._revision
 
         // Update revision metadata.
-        // Use dot notation here so it doesn't overwrite the `_revision.previous` field.
+        // Use dot notation here so it doesn't overwrite the `_revision.history` field.
         data['_revision.id'] = current._revision.id + 1
         data['_revision.createdAt'] = data.updatedAt || new Date()
 
-        // Ensure the previous stack isn't accidentally overridden.
-        delete data['_revision.previous']
+        // Ensure the historical revisions aren't accidentally overridden.
+        delete data['_revision.history']
 
         return this.Model
           .update({
@@ -109,7 +109,7 @@ class Service extends adapter.Service {
             // Set the resource data to the updated values.
             $set: data,
             // Push the current revision onto the stack.
-            $push: { '_revision.previous': current }
+            $push: { '_revision.history': current }
           })
           .then(response => {
             // Alert to race conditions between the `find` and `update` calls.
