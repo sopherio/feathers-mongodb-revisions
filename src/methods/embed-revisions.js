@@ -1,8 +1,9 @@
 'use strict'
 
+import adapter from 'feathers-mongodb'
 import errorHandler from 'feathers-mongodb/lib/error-handler'
 import errors from 'feathers-errors'
-import adapter from 'feathers-mongodb'
+import merge from 'lodash/merge'
 
 class Service extends adapter.Service {
   // Duplicates super._get, but omits previous revisions for performance.
@@ -30,21 +31,12 @@ class Service extends adapter.Service {
     return super.create(data)
   }
 
-  patch (id, data, params) {
-    return super.patch(id, data, params)
-  }
-
-  update (id, data, params) {
-    // Duplicate the validation check from super.update for safety.
-    if (Array.isArray(data) || id === null) {
-      return Promise.reject('Not replacing multiple records. Did you mean `patch`?')
-    }
-
+  _updateRevision (id, data, params, partialUpdate = false) {
     return this.Model
       .findOne({ [this.id]: id }, { '_revision.previous': 0 })
       .then(current => {
         if (!current) {
-          throw new errors.NotFound(`No record found for ID '${id}'`)
+          throw new errors.NotFound(`No record found for id '${id}'`)
         }
 
         // Require passing in the current revision ID, to guard against race conditions.
@@ -55,7 +47,12 @@ class Service extends adapter.Service {
         // Validate the current revision ID, to guard against race conditions.
         // Convert to strings in case the data type is different.
         if (data._revision.id.toString() !== current._revision.id.toString()) {
-          return Promise.reject(`Record '${id}' has already been updated. Try again.`)
+          throw new errors.Forbidden(`Record '${id}' has been updated by another user. Try again.`)
+        }
+
+        // If this is a `patch` update, merge the updated values into the current resource.
+        if (partialUpdate) {
+          data = merge({}, current, data)
         }
 
         // Disallow explicitly updating revision metadata.
@@ -85,13 +82,26 @@ class Service extends adapter.Service {
           .then(response => {
             // Alert to race conditions between the `find` and `update` calls.
             if (response.result.nModified !== 1) {
-              return Promise.reject(`Record '${id}' has already been updated. Try again.`)
+              throw new errors.Forbidden(`Record '${id}' has been updated by another user. Try again.`)
             }
           })
           // Return the updated resource.
           .then(() => this._findOrGet(id))
       })
       .catch(errorHandler)
+  }
+
+  patch (id, data, params) {
+    return this._updateRevision(id, data, params, true)
+  }
+
+  update (id, data, params) {
+    // Duplicate the validation check from `super.update` for safety.
+    if (Array.isArray(data) || id === null) {
+      return Promise.reject('Not replacing multiple records. Did you mean `patch`?')
+    }
+
+    return this._updateRevision(id, data, params, false)
   }
 
   remove (id, params) {
