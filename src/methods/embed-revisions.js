@@ -62,6 +62,8 @@ class Service extends adapter.Service {
   }
 
   _updateRevision (id, data, params, partialUpdate = false) {
+    id = this._objectifyId(id)
+
     return this.Model
       .findOne({ [this.id]: id }, { '_revision.previous': 0 })
       .then(current => {
