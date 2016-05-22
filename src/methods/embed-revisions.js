@@ -6,7 +6,37 @@ import errors from 'feathers-errors'
 import merge from 'lodash/merge'
 
 class Service extends adapter.Service {
-  // Duplicates super._get, but omits previous revisions for performance.
+  // Duplicates `super._find`, but omits previous revisions for performance.
+  _find (params, count, getFilter) {
+    // Ensure query parameters have been specified.
+    params.query = params.query || {}
+
+    // Whether results will need post-processing to remove previous revisions.
+    let removePreviousRevisionsManually = true
+
+    if (!params.query.$select) {
+      // If no $select fields have been specified, exclude previous revisions.
+      params.query.$select = { '_revision.previous': 0 }
+      // Since the previous revisions are omitted, no need to manually remove them.
+      removePreviousRevisionsManually = false
+    }
+
+    return super._find(params, count, getFilter)
+      .then(response => {
+        if (removePreviousRevisionsManually) {
+          // Mongo only allows for including or excluding fields, not both.
+          // If $select fields have been specified, the only way to remove
+          // the previous versions is after the query has been executed.
+          response.data.forEach(resource => {
+            delete resource._revision.previous
+          })
+        }
+        return response
+      })
+      .catch(errorHandler)
+  }
+
+  // Duplicates `super._get`, but omits previous revisions for performance.
   _get (id) {
     id = this._objectifyId(id)
 
