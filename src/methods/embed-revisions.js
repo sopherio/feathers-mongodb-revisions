@@ -133,10 +133,6 @@ class Service extends adapter.Service {
 
     return this._updateRevision(id, data, params, false)
   }
-
-  remove (id, params) {
-    return super.remove(id, params)
-  }
 }
 
 export default function init (options) {
