@@ -6,7 +6,9 @@ import errors from 'feathers-errors'
 import merge from 'lodash/merge'
 
 class Service extends adapter.Service {
-  // Duplicates `super._find`, but omits historical revisions for performance.
+  /**
+   * Duplicates `super._find`, but omits historical revisions for performance.
+   */
   _find (params, count, getFilter) {
     // Ensure query parameters have been specified.
     params.query = params.query || {}
@@ -15,18 +17,20 @@ class Service extends adapter.Service {
     let removeHistoricalRevisionsManually = true
 
     if (!params.query.$select) {
-      // If no $select fields have been specified, exclude historical revisions.
+      // If no $select fields have been specified,
+      // exclude historical revisions from the response.
       params.query.$select = { '_revision.history': 0 }
-      // Since the historical revisions are omitted, no need to manually remove them.
+      // Since the historical revisions are omitted,
+      // there is no need to manually remove them.
       removeHistoricalRevisionsManually = false
     }
 
     return super._find(params, count, getFilter)
       .then(response => {
+        // Mongo only allows for including or excluding fields, not both.
+        // If `$select` fields have been requested, the only way to remove
+        // the historical revisions is after the query has been executed.
         if (removeHistoricalRevisionsManually) {
-          // Mongo only allows for including or excluding fields, not both.
-          // If $select fields have been specified, the only way to remove
-          // the historical versions is after the query has been executed.
           response.data.forEach(resource => {
             if (resource._revision && resource._revision.history) {
               delete resource._revision.history
@@ -38,7 +42,12 @@ class Service extends adapter.Service {
       .catch(errorHandler)
   }
 
-  // Duplicates `super._get`, but omits historical revisions for performance.
+  /**
+   * Duplicates `super._get`, but omits historical revisions for performance.
+   *
+   * This could be much simpler if `get`/`_get` supported field selection,
+   * but that omission is likely intentional to simplify Feathers.
+   */
   _get (id) {
     id = this._objectifyId(id)
 
@@ -81,7 +90,7 @@ class Service extends adapter.Service {
         // Validate the current revision ID, to guard against race conditions.
         // Convert to strings in case the data type is different.
         if (data._revision.id.toString() !== current._revision.id.toString()) {
-          throw new errors.Forbidden(`Record '${id}' has been updated by another user. Try again.`)
+          throw new errors.Forbidden(`Record '${id}' has been updated by another request. Try again.`)
         }
 
         // If this is a `patch` update, merge the updated values into the current resource.
@@ -95,7 +104,7 @@ class Service extends adapter.Service {
         }
 
         // Update revision metadata.
-        // Use dot notation here so it doesn't overwrite the `_revision.history` field.
+        // Use dot notation here, otherwise Mongo will complain during the update.
         data['_revision.id'] = current._revision.id + 1
         data['_revision.createdAt'] = data.updatedAt || new Date()
 
@@ -120,7 +129,7 @@ class Service extends adapter.Service {
           .then(response => {
             // Alert to race conditions between the `find` and `update` calls.
             if (response.result.nModified !== 1) {
-              throw new errors.Forbidden(`Record '${id}' has been updated by another user. Try again.`)
+              throw new errors.Forbidden(`Record '${id}' has been updated by another request. Try again.`)
             }
           })
           // Return the updated resource.
