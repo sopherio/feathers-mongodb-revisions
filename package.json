@@ -33,7 +33,7 @@
     "release:minor": "npm version minor && npm publish",
     "release:patch": "npm version patch && npm publish",
     "release:prerelease": "npm version prerelease && npm publish",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --require babel-register test/*.test.js",
     "watch": "babel --watch --out-dir lib/ src/"
   },
   "dependencies": {
