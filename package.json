@@ -34,6 +34,7 @@
     "release:minor": "npm version minor && npm publish",
     "release:patch": "npm version patch && npm publish",
     "release:prerelease": "npm version prerelease && npm publish",
+    "start:example": "node --require babel-register example",
     "test": "mocha --require babel-register test/*.test.js",
     "test:feathers-mongodb": "mocha --require babel-register test-feathers-service/*.test.js",
     "watch": "babel --watch --out-dir lib/ src/"
