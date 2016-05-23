@@ -1,6 +1,6 @@
 {
   "name": "feathers-mongodb-revisions",
-  "description": "Feathers MongoDB service with revisions support.",
+  "description": "Feathers MongoDB service with revision support.",
   "version": "0.1.0",
   "license": "ISC",
   "keywords": [
@@ -10,6 +10,7 @@
     "mongo",
     "mongodb",
     "revision",
+    "revisions",
     "service",
     "version"
   ],
