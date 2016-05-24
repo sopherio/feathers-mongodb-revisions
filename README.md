@@ -66,3 +66,9 @@ Please refer to the [Feathers database adapter documentation](http://docs.feathe
 - [Extending](http://docs.feathersjs.com/databases/extending.html) - How to extend a database adapter
 - [Pagination and Sorting](http://docs.feathersjs.com/databases/pagination.html) - How to use pagination and sorting for the database adapter
 - [Querying](http://docs.feathersjs.com/databases/querying.html) - The common adapter querying mechanism
+
+## Tests
+
+This adapter comes with two test suites. First, launch a MongoDB instance on `mongodb://localhost:27017`, and run the adapter tests with `npm test`.
+
+A copy of the `feathers-mongodb` test suite can also be run with `npm run test:feathers-mongodb`, however _these will not all pass_. The update/patch tests will fail due to the requirement of passing in the current revision ID, which the upstream tests do not pass. It is still good practice to run these tests occasionally in order to keep fidelity with the upstream Feathers MongoDB adapter.
