@@ -48,9 +48,9 @@ When updating a resource (via either `patch` or `update`), the current revision 
 ```js
 let service = app.service('resources')
 
-let resource = service.get(1)
+let resource = service.get(123)
 
-service.patch(service.id, {
+service.patch(resource.id, {
   name: 'updated name',
   _revision: {
     id: resource._revision.id
