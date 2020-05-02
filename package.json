@@ -18,7 +18,7 @@
   "directories": {
     "lib": "lib"
   },
-  "standard": {
+  "semistandard": {
     "ignore": [
       "lib",
       "test-feathers-mongodb"
@@ -26,44 +26,41 @@
   },
   "scripts": {
     "compile": "rimraf lib/ && babel --out-dir lib/ src/",
-    "lint": "standard --verbose | snazzy",
-    "preinstall": "npm prune",
-    "prepublish": "npm run compile",
-    "pretest": "npm run lint && npm run compile && nsp check",
+    "lint": "semistandard --verbose | snazzy",
+    "prepublish": "yarn run compile",
+    "pretest": "yarn run lint && yarn run compile && yarn audit",
     "publish": "git push origin && git push origin --tags",
     "release:major": "npm version major && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:patch": "npm version patch && npm publish",
     "release:prerelease": "npm version prerelease && npm publish",
-    "start:example": "node --require babel-register example",
-    "test": "mocha --require babel-register test/*.test.js",
-    "test:feathers-mongodb": "mocha --require babel-register test-feathers-mongodb/*.test.js",
+    "start:example": "node --require @babel/register example",
+    "test": "mocha --require @babel/register test/*.test.js",
+    "test:feathers-mongodb": "mocha --require @babel/register test-feathers-mongodb/*.test.js",
     "watch": "babel --watch --out-dir lib/ src/"
   },
   "dependencies": {
-    "feathers-errors": "^2.1.0",
-    "feathers-mongodb": "^2.2.0",
-    "lodash": "^4.12.0"
+    "@feathersjs/errors": "^4.5.3",
+    "lodash": "^4.17.15"
+  },
+  "peerDependencies": {
+    "feathers-mongodb": "^6.1.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.9.0",
-    "babel-core": "^6.9.0",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-polyfill": "^6.9.0",
-    "babel-preset-es2015": "^6.9.0",
-    "babel-register": "^6.9.0",
-    "body-parser": "^1.15.1",
-    "chai": "^3.5.0",
-    "feathers": "^2.0.1",
-    "feathers-rest": "^1.3.0",
-    "feathers-service-tests": "^0.5.8",
-    "feathers-socketio": "^1.4.0",
-    "mocha": "^2.4.5",
-    "mongodb": "^2.1.19",
-    "nsp": "^2.4.0",
-    "rimraf": "^2.5.2",
-    "snazzy": "^4.0.0",
-    "standard": "*"
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/register": "^7.9.0",
+    "@feathersjs/express": "^4.5.4",
+    "@feathersjs/feathers": "^4.5.3",
+    "@feathersjs/rest-client": "^4.5.4",
+    "chai": "^4.2.0",
+    "feathers-mongodb": "^6.1.0",
+    "mocha": "^7.1.2",
+    "mongodb": "^3.5.7",
+    "rimraf": "^3.0.2",
+    "semistandard": "^14.2.0",
+    "snazzy": "^8.0.0"
   },
   "engines": {
     "node": ">= 0.12.0"

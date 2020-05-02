@@ -1,6 +1,6 @@
-'use strict'
+'use strict';
 
-import embedRevisions from './methods/embed-revisions'
+import embedRevisions from './methods/embed-revisions';
 
-export { embedRevisions }
-export default embedRevisions
+export { embedRevisions };
+export default embedRevisions;
