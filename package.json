@@ -30,7 +30,7 @@
     "prepublish": "yarn run compile",
     "pretest": "yarn run lint && yarn run compile && yarn audit",
     "publish": "git push origin && git push origin --tags",
-    "postinstall": "yarn install; yarn run compile",
+    "install": "yarn run compile",
     "release:major": "npm version major && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:patch": "npm version patch && npm publish",
@@ -41,6 +41,10 @@
     "watch": "babel --watch --out-dir lib/ src/"
   },
   "dependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/register": "^7.9.0",
     "@feathersjs/errors": "^4.5.3",
     "lodash": "^4.17.15"
   },
@@ -48,10 +52,6 @@
     "feathers-mongodb": "^6.1.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "@babel/register": "^7.9.0",
     "@feathersjs/express": "^4.5.4",
     "@feathersjs/feathers": "^4.5.3",
     "@feathersjs/rest-client": "^4.5.4",
