@@ -112,6 +112,9 @@ class Service extends adapter.Service {
           delete data['_revision.history'];
         }
 
+        // remove history from old revision
+        delete current._revision.history;
+
         return this.Model
           .update({
             // Filter against the resource ID.
