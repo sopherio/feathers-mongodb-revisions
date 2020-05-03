@@ -30,6 +30,7 @@
     "prepublish": "yarn run compile",
     "pretest": "yarn run lint && yarn run compile && yarn audit",
     "publish": "git push origin && git push origin --tags",
+    "postinstall": "yarn run compile",
     "release:major": "npm version major && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:patch": "npm version patch && npm publish",
