@@ -27,7 +27,7 @@
   "scripts": {
     "compile": "rimraf lib/ && babel --out-dir lib/ src/",
     "lint": "semistandard --verbose | snazzy",
-    "prepublish": "yarn run compile",
+    "prepublish": "yarn install; yarn run compile",
     "pretest": "yarn run lint && yarn run compile && yarn audit",
     "publish": "git push origin && git push origin --tags",
     "postinstall": "yarn run compile",
